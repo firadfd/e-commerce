@@ -1,5 +1,5 @@
 import 'package:e_commerce/core/utils/app_colors.dart';
-import 'package:e_commerce/features/signin/screen/sign_in_controller.dart';
+import 'package:e_commerce/features/signin/controller/sign_in_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';

@@ -67,62 +67,38 @@ class NetworkCaller {
     final decodedResponse = jsonDecode(response.body);
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      if (decodedResponse['success'] == true) {
+      if (decodedResponse is List) {
         return ResponseData(
           isSuccess: true,
           statusCode: response.statusCode,
-          responseData: decodedResponse['result'],
+          responseData: decodedResponse,
           errorMessage: '',
         );
-      } else {
+      }
+      if (decodedResponse is Map<String, dynamic> && decodedResponse['success'] == true) {
         return ResponseData(
-          isSuccess: false,
+          isSuccess: true,
           statusCode: response.statusCode,
-          responseData: decodedResponse,
-          errorMessage: decodedResponse['message'] ?? 'Unknown error occurred',
+          responseData: decodedResponse['result'] ?? decodedResponse,
+          errorMessage: '',
         );
       }
-    } else if (response.statusCode == 400) {
       return ResponseData(
         isSuccess: false,
         statusCode: response.statusCode,
         responseData: decodedResponse,
         errorMessage: decodedResponse['message'] ?? 'Unknown error occurred',
       );
-    } else if (response.statusCode == 422) {
-      return ResponseData(
-        isSuccess: false,
-        statusCode: response.statusCode,
-        responseData: decodedResponse['result'],
-        errorMessage: decodedResponse['message'] ?? 'Unknown error occurred',
-      );
-    } else if (response.statusCode == 500) {
-      return ResponseData(
-        isSuccess: false,
-        statusCode: response.statusCode,
-        responseData: decodedResponse,
-        errorMessage:
-            decodedResponse['message'] ?? 'An unexpected error occurred!',
-      );
-    } else {
-      return ResponseData(
-        isSuccess: false,
-        statusCode: response.statusCode,
-        responseData: decodedResponse,
-        errorMessage: decodedResponse['message'] ?? 'An unknown error occurred',
-      );
     }
+    return ResponseData(
+      isSuccess: false,
+      statusCode: response.statusCode,
+      responseData: decodedResponse,
+      errorMessage: decodedResponse is Map<String, dynamic> ? decodedResponse['message'] ?? 'An unknown error occurred' : 'Invalid response format',
+    );
   }
 
 
-  String _extractErrorMessages(dynamic errorSources) {
-    if (errorSources is List) {
-      return errorSources
-          .map((error) => error['message'] ?? 'Unknown error')
-          .join(', ');
-    }
-    return 'Validation error';
-  }
 
 
   ResponseData _handleError(dynamic error) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'core/routes/app_route.dart';
@@ -14,6 +15,7 @@ class MyApp extends StatelessWidget {
       designSize: const Size(375, 812),
       builder: (_, child) {
         return GetMaterialApp(
+          builder: EasyLoading.init(),
           debugShowCheckedModeBanner: false,
           getPages: AppRoute.route,
           transitionDuration: const Duration(milliseconds: 200),

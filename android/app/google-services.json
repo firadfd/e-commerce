@@ -44,12 +44,20 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:100458729515:android:2453a838686bfce36c9a6e",
+        "mobilesdk_app_id": "1:100458729515:android:99f7ea4a187eee596c9a6e",
         "android_client_info": {
           "package_name": "com.example.e_commerce"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "100458729515-vl7c8n35cp507b5eqqflc2nfjcv6cn3f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.e_commerce",
+            "certificate_hash": "cdd93df2fdd9737aeb74b6b4ca24506b511c253e"
+          }
+        },
         {
           "client_id": "100458729515-c89dca7nmrrakncvick67ffs2siabq39.apps.googleusercontent.com",
           "client_type": 3
