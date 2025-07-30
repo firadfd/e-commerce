@@ -10,6 +10,8 @@ import 'network_caller/utility/app_urls.dart';
 class StripeService {
   StripeService._();
 
+  final String key = "";
+
   static final StripeService instance = StripeService._();
 
   Future<String?> GetToken() async {
@@ -69,7 +71,7 @@ class StripeService {
         options: Options(
           headers: {
             "Authorization":
-                "Bearer sk_test_51RLGHnHDdO1S05AmT0jmArZO4P5AJ0m2TprQJ5tpL1pixpL9o4FI078iOMU4vcZgAcxIn937ZjTVH9fQuzx1digK00hjGwXBq9",
+                "Bearer $key",
             "Content-Type": 'application/x-www-form-urlencoded',
           },
         ),
@@ -140,7 +142,7 @@ class StripeService {
           contentType: Headers.formUrlEncodedContentType,
           headers: {
             "Authorization":
-                "Bearer sk_test_51RLGHnHDdO1S05AmT0jmArZO4P5AJ0m2TprQJ5tpL1pixpL9o4FI078iOMU4vcZgAcxIn937ZjTVH9fQuzx1digK00hjGwXBq9",
+                "Bearer $key",
           },
         ),
       );
@@ -183,7 +185,7 @@ class StripeService {
         options: Options(
           headers: {
             "Authorization":
-            "Bearer sk_test_51RLGHnHDdO1S05AmT0jmArZO4P5AJ0m2TprQJ5tpL1pixpL9o4FI078iOMU4vcZgAcxIn937ZjTVH9fQuzx1digK00hjGwXBq9",
+            "Bearer $key",
             "Content-Type": 'application/x-www-form-urlencoded',
           },
         ),
