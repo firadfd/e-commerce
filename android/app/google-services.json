@@ -1,0 +1,76 @@
+{
+  "project_info": {
+    "project_number": "100458729515",
+    "project_id": "app-screenshot-352c0",
+    "storage_bucket": "app-screenshot-352c0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100458729515:android:42c29b8c49784ec36c9a6e",
+        "android_client_info": {
+          "package_name": "com.car.car_parking"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "100458729515-beiq5ki4b34l24nn8nti1hg8h6aakkgj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.car.car_parking",
+            "certificate_hash": "f6a60284f6fa168f9d7d1a9102c2a1288df63f5e"
+          }
+        },
+        {
+          "client_id": "100458729515-c89dca7nmrrakncvick67ffs2siabq39.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZIgbXceyrAu-hObOt2StollynMPuhJnI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "100458729515-c89dca7nmrrakncvick67ffs2siabq39.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100458729515:android:2453a838686bfce36c9a6e",
+        "android_client_info": {
+          "package_name": "com.example.e_commerce"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "100458729515-c89dca7nmrrakncvick67ffs2siabq39.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZIgbXceyrAu-hObOt2StollynMPuhJnI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "100458729515-c89dca7nmrrakncvick67ffs2siabq39.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
