@@ -78,7 +78,7 @@ jobs:
 
   ios-build:
     name: Build iOS
-    runs-on: macos-latest # iOS builds require a macOS runner
+    runs-on: macos-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -86,7 +86,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2.12.0
         with:
-          flutter-version: '3.32.8' # Use the same Flutter version for consistency
+          flutter-version: '3.32.8'
           cache: true
 
       - name: Verify Flutter Setup
@@ -99,50 +99,64 @@ jobs:
 
       - name: Install CocoaPods
         run: |
-          sudo gem install cocoapods # Install CocoaPods, often required for iOS projects
+          sudo gem install cocoapods
           pod setup
 
       - name: Set up iOS Code Signing
         env:
-          # These secrets will need to be configured in your GitHub repository settings.
-          # For more secure handling, consider using a dedicated action for code signing.
-          # https://github.com/apple-actions/import-codesign-certs
           P12_BASE64: ${{ secrets.P12_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
           PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: your_temporary_keychain_password # Choose a strong temporary password here
         run: |
-          # Decode and import the .p12 certificate
-          echo "$P12_BASE64" | base64 --decode > temp.p12
-          security import temp.p12 -k ~/Library/Keychains/login.keychain-db -P "$P12_PASSWORD" -T /usr/bin/codesign
-          rm temp.p12
+          # 1. Create a temporary keychain
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain-db
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security default-keychain -s "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -t 3600 -l "$KEYCHAIN_PATH" # Set timeout for 1 hour
+          security list-keychains # Verify the keychain is set
 
-          # Decode and install the provisioning profile
+          # 2. Decode and import the .p12 certificate
+          # Ensure no trailing newlines in the secret by using `echo -n`
+          echo -n "$P12_BASE64" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          security import "$RUNNER_TEMP/certificate.p12" -k "$KEYCHAIN_PATH" -P "$P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security || { echo "Certificate import failed!"; exit 1; }
+          rm "$RUNNER_TEMP/certificate.p12"
+
+          # 3. Decode and install the provisioning profile
+          PROVISIONING_PROFILE_PATH="$RUNNER_TEMP/profile.mobileprovision"
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          echo "$PROVISIONING_PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/temp.mobileprovision
+          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode > "$PROVISIONING_PROFILE_PATH"
+          mv "$PROVISIONING_PROFILE_PATH" ~/Library/MobileDevice/Provisioning\ Profiles/
+
+          # Verify provisioning profile installation (optional, but good for debugging)
+          ls -l ~/Library/MobileDevice/Provisioning\ Profiles/
+
+          # Add certificate to search list
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" || { echo "Failed to set key partition list!"; exit 1; }
+        # The working-directory here is relative to the root of the checkout
+        # If your .p12 and .mobileprovision are not directly in ./ios, adjust paths
         working-directory: ./ios
 
       - name: Update Info.plist for build number (Optional, but good practice)
         run: |
-          # Increment the build number for each CI/CD run, or set it from a variable
-          # You might want to get the current build number and increment it,
-          # or use a fixed build number for CI/CD.
-          # For simplicity, this example just sets a placeholder.
-          # You can use 'agvtool new-version -all <version_number>' if agvtool is configured.
-          echo "Updating Info.plist build number..."
           PLIST_PATH="Runner/Info.plist"
-          BUILD_NUMBER=$(date +%s) # Example: Use timestamp as build number
+          BUILD_NUMBER=$(date +%s)
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$PLIST_PATH"
           echo "Set CFBundleVersion to $BUILD_NUMBER"
         working-directory: ./ios
 
       - name: Build iOS Archive (IPA)
         run: flutter build ipa --release
+        env:
+          FLUTTER_BUILD_IOS_CODESIGN_IDENTITY: "Apple Distribution: Your Company Name (XXXXXXXXXX)"
+          FLUTTER_BUILD_IOS_TEAM_ID: "YOUR_TEAM_ID"
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios-ipa
-          path: build/ios/archive/Runner.xcarchive/Products/Applications/*.ipa # Adjust path if necessary
+          path: build/ios/archive/Runner.xcarchive/Products/Applications/*.ipa
           retention-days: 7
 
       - name: Upload IPA to GitHub Release
@@ -150,6 +164,6 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          files: build/ios/archive/Runner.xcarchive/Products/Applications/*.ipa # Adjust path if necessary
+          files: build/ios/archive/Runner.xcarchive/Products/Applications/*.ipa
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }} # Use your GitHub Token
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
