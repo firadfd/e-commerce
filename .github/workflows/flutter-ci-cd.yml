@@ -14,24 +14,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4  # Updated from v3
+        uses: actions/checkout@v4
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2.12.0  # Updated to specific version
+        uses: subosito/flutter-action@v2.12.0
         with:
-          flutter-version: '3.29.2'  # From your working workflow; confirm if correct
+          # This version was updated to a newer version (3.32.8)
+          # to meet the project's Dart SDK requirements as suggested by the error log.
+          flutter-version: '3.32.8'
           cache: true
 
       - name: Verify Flutter Setup
         run: |
           flutter --version
-          echo "Flutter setup completed for version 3.29.2"
+          echo "Flutter setup completed for version 3.32.8"
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Run tests
-        run: flutter test  # Re-added tests, assuming they pass
+        run: flutter test
 
       - name: Set up key.properties
         run: |
