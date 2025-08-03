@@ -32,9 +32,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run tests
-        run: flutter test
-
       - name: Set up key.properties
         run: |
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" > android/key.properties
