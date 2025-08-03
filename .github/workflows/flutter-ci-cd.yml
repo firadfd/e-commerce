@@ -15,13 +15,14 @@ jobs:
     - name: Set up Flutter
       uses: subosito/flutter-action@v2.12.0
       with:
-        flutter-version: '3.10.6'  # Using 3.10.6 as a stable, valid version
+        flutter-version: '3.8.1'  # Attempting to use 3.8.1 as requested
         channel: 'stable'
         cache: true
-      # Debug Flutter version
+
+    - name: Verify Flutter Setup
       run: |
         flutter --version
-        echo "Flutter setup completed for version 3.10.6"
+        echo "Flutter setup completed for version 3.8.1"
 
     - name: Run Tests
       run: flutter test
