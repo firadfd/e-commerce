@@ -32,17 +32,24 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Run tests
+        # The 'Run tests' step was missing from your last provided code,
+        # but is a good practice, so I've included it.
+        run: flutter test
+
       - name: Set up key.properties
         run: |
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" > android/key.properties
-          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "${{ secrets.STORE_FILE_CONTENT }}" | base64 --decode > android/key.jks
+          # The working-directory is already 'android', so we don't need to specify 'android/'.
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" > key.properties
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> key.properties
+          echo "${{ secrets.STORE_FILE_CONTENT }}" | base64 --decode > key.jks
         working-directory: ./android
 
       - name: Set up local.properties
         run: |
-          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+          # The working-directory is already 'android', so we don't need to specify 'android/'.
+          echo "flutter.sdk=$FLUTTER_ROOT" > local.properties
         working-directory: ./android
 
       - name: Build Release AAB and APK
@@ -71,4 +78,5 @@ jobs:
           name: Release ${{ github.ref_name }}
           files: build/app/outputs/flutter-apk/app-release.apk
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          # Corrected the secret name to the standard GITHUB_TOKEN
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
