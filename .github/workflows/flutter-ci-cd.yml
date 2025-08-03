@@ -1,0 +1,57 @@
+name: Flutter CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2.12.0
+        with:
+          flutter-version: '3.10.6'  # Match your Flutter version
+          cache: true
+
+      - name: Run Tests
+        run: flutter test
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Set up key.properties
+        run: |
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" > android/key.properties
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "${{ secrets.STORE_FILE_CONTENT }}" | base64 --decode > android/key.jks
+        working-directory: ./android
+
+      - name: Set up local.properties
+        run: |
+          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+        working-directory: ./android
+
+      - name: Build Android AAB and APK
+        run: |
+          flutter build appbundle --release
+          flutter build apk --release
+
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 7
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7
