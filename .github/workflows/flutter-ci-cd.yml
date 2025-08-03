@@ -2,61 +2,74 @@ name: Flutter CI/CD
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
 
 jobs:
-  android:
+  android-build:
+    name: Build Android
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4  # Updated from v3
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2.12.0
-      with:
-        flutter-version: '3.8.1'  # Attempting to use 3.8.1 as requested
-        cache: true
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2.12.0  # Updated to specific version
+        with:
+          flutter-version: '3.29.2'  # From your working workflow; confirm if correct
+          cache: true
 
-    - name: Verify Flutter Setup
-      run: |
-        flutter --version
-        echo "Flutter setup completed for version 3.8.1"
+      - name: Verify Flutter Setup
+        run: |
+          flutter --version
+          echo "Flutter setup completed for version 3.29.2"
 
-    - name: Run Tests
-      run: flutter test
+      - name: Install dependencies
+        run: flutter pub get
 
-    - name: Install dependencies
-      run: flutter pub get
+      - name: Run tests
+        run: flutter test  # Re-added tests, assuming they pass
 
-    - name: Set up key.properties
-      run: |
-        echo "keyPassword=${{ secrets.KEY_PASSWORD }}" > android/key.properties
-        echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
-        echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-        echo "${{ secrets.STORE_FILE_CONTENT }}" | base64 --decode > android/key.jks
-      working-directory: ./android
+      - name: Set up key.properties
+        run: |
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" > android/key.properties
+          echo "storePassword=${{ secrets.STORE_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "${{ secrets.STORE_FILE_CONTENT }}" | base64 --decode > android/key.jks
+        working-directory: ./android
 
-    - name: Set up local.properties
-      run: |
-        echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
-      working-directory: ./android
+      - name: Set up local.properties
+        run: |
+          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+        working-directory: ./android
 
-    - name: Build Android AAB and APK
-      run: |
-        flutter build appbundle --release
-        flutter build apk --release
+      - name: Build Release AAB and APK
+        run: |
+          flutter build appbundle --release
+          flutter build apk --release
 
-    - name: Upload AAB Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: android-aab
-        path: build/app/outputs/bundle/release/app-release.aab
-        retention-days: 7
+      - name: Upload AAB Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 7
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: android-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
-        retention-days: 7
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7
+
+      - name: Upload APK to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
