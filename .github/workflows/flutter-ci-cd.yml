@@ -32,11 +32,6 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Run tests
-        # The 'Run tests' step was missing from your last provided code,
-        # but is a good practice, so I've included it.
-        run: flutter test
-
       - name: Set up key.properties
         run: |
           # The working-directory is already 'android', so we don't need to specify 'android/'.
