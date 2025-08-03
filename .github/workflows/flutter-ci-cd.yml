@@ -16,7 +16,6 @@ jobs:
       uses: subosito/flutter-action@v2.12.0
       with:
         flutter-version: '3.8.1'  # Attempting to use 3.8.1 as requested
-        channel: 'stable'
         cache: true
 
     - name: Verify Flutter Setup
