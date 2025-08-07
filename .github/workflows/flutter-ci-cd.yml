@@ -29,10 +29,10 @@ jobs:
           java -version
           flutter doctor -v
       - name: Run Tests
-        continue-on-error: true # Allow build to continue if tests fail
+        continue-on-error: true # Temporary workaround for test failure
         run: |
           flutter test --machine > test-results.json || echo "Tests failed, but continuing build"
-          cat test-results.json # Output test results for debugging
+          cat test-results.json
       - name: Build APK
         run: flutter build apk --release --split-per-abi
       - name: Upload Android Artifacts
@@ -63,10 +63,19 @@ jobs:
           java -version
           flutter doctor -v
       - name: Run Tests
-        continue-on-error: true # Allow build to continue if tests fail
+        continue-on-error: true # Temporary workaround for test failure
         run: |
           flutter test --machine > test-results.json || echo "Tests failed, but continuing build"
-          cat test-results.json # Output test results for debugging
+          cat test-results.json
+      - name: Ensure iOS Deployment Target
+        run: |
+          sed -i '' 's/platform :ios, .*/platform :ios, "15.0"/' ios/Podfile
+          grep "platform :ios" ios/Podfile # Verify change
+      - name: Install Pods
+        run: |
+          cd ios
+          pod install --verbose
+          cd ..
       - name: Build iOS
         run: |
           flutter build ios --no-codesign
