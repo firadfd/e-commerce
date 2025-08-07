@@ -12,17 +12,24 @@ jobs:
     name: Build Android
     runs-on: ubuntu-latest # Use Linux for Android to save costs
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '11'
-      - uses: subosito/flutter-action@v2
+          java-version: '17' # Required for Android Gradle Plugin
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           architecture: x64
-      - name: Run Flutter Doctor
-        run: flutter doctor -v
+      - name: Verify Environment
+        run: |
+          java -version
+          flutter doctor -v
+      - name: Run Tests
+        run: flutter test
       - name: Build APK
         run: flutter build apk --release --split-per-abi
       - name: Upload Android Artifacts
@@ -30,22 +37,30 @@ jobs:
         with:
           name: android-apks
           path: build/app/outputs/apk/release/*.apk
+          retention-days: 7
 
   build-ios:
     name: Build iOS
     runs-on: macos-latest # Required for iOS builds
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Set up Java
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: '11'
-      - uses: subosito/flutter-action@v2
+          java-version: '17' # Included for consistency, though not strictly needed for iOS
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
           architecture: x64
-      - name: Run Flutter Doctor
-        run: flutter doctor -v
+      - name: Verify Environment
+        run: |
+          java -version
+          flutter doctor -v
+      - name: Run Tests
+        run: flutter test
       - name: Build iOS
         run: |
           flutter build ios --no-codesign
@@ -55,18 +70,32 @@ jobs:
           ln -s ../Runner.app
           cd ..
           zip -r app.ipa Payload
+      # Optional: Add code signing for production iOS builds
+      # - name: Setup Code Signing
+      #   uses: apple-actions/import-codesign-certs@v2
+      #   with:
+      #     p12-file-base64: ${{ secrets.P12_BASE64 }}
+      #     p12-password: ${{ secrets.P12_PASSWORD }}
+      #     keychain-password: ${{ secrets.KEYCHAIN_PASSWORD }}
+      # - name: Build iOS
+      #   run: flutter build ios --release
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios-ipa
           path: build/ios/iphoneos/app.ipa
+          retention-days: 7
 
   release:
     name: Create Release
     needs: [build-android, build-ios]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Get Version from pubspec.yaml
+        id: version
+        run: echo "version=$(grep 'version:' pubspec.yaml | awk '{print $2}')" >> $GITHUB_OUTPUT
       - name: Download Android Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -81,5 +110,5 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "build/app/outputs/apk/release/*.apk,build/ios/iphoneos/app.ipa"
-          tag: v1.0.${{ github.run_number }}
+          tag: ${{ steps.version.outputs.version }}
           token: ${{ secrets.TOKEN }}
